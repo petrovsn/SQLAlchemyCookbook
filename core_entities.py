@@ -1,0 +1,76 @@
+from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
+from sqlalchemy.ext.declarative import as_declarative
+from sqlalchemy.orm import declarative_base, relationship, Session
+from sqlalchemy import select, update, delete, insert
+
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from sqlite3 import Connection as SQLite3Connection
+
+from sqlalchemy.orm import Mapped, mapped_column
+
+# Твой код с моделями и engine = create_engine(...) должен быть выше
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    # Проверяем, что мы работаем именно с SQLite
+    if isinstance(dbapi_connection, SQLite3Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
+
+@as_declarative() 
+class Base(object): 
+    __abstract__ = True
+    id = Column(Integer, autoincrement=True, primary_key=True)
+
+    def to_dict(self):
+        """
+        Преобразует объект модели в словарь.
+        Возвращает все колонки таблицы.
+        """
+        return {
+            column.name: getattr(self, column.name)
+            for column in self.__table__.columns
+        }
+
+    def  __repr__(self):
+        return str(self.to_dict())
+
+class User(Base): 
+    __tablename__ = "users"
+    name: Mapped[str] = mapped_column()
+    nickname: Mapped[str] = mapped_column(nullable=True) 
+    addresses = relationship("Address", back_populates="user") 
+    posts = relationship("Post", back_populates="user") 
+ 
+ 
+class Address(Base): 
+    __tablename__ = "addresses"
+    email_address = Column(String, nullable=False) 
+    user_id = Column(Integer, ForeignKey("users.id")) 
+    user = relationship("User", back_populates="addresses") 
+
+
+
+class Post(Base): 
+    __tablename__ = "posts"
+    text = Column(String) 
+    user_id = Column(Integer, ForeignKey("users.id")) 
+    user = relationship("User", back_populates="posts") 
+
+
+for model in [User,Address, Post]:
+    print(model.__table__)
+
+
+def redeclare_db(filename = ":memory:"):
+    engine = create_engine(f"sqlite+pysqlite:///{filename}", echo=True, future=True)
+    Base.metadata.create_all(engine)
+    return engine
+
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+async def redeclare_db_async(filename = ":memory:", echo = True):
+    engine = create_async_engine(f"sqlite+aiosqlite:///{filename}", echo=echo, future=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    return engine
