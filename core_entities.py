@@ -63,8 +63,8 @@ for model in [User,Address, Post]:
     print(model.__table__)
 
 
-def redeclare_db(filename = ":memory:"):
-    engine = create_engine(f"sqlite+pysqlite:///{filename}", echo=True, future=True)
+def redeclare_db(filename = ":memory:", echo = True):
+    engine = create_engine(f"sqlite+pysqlite:///{filename}", echo=echo, future=True)
     Base.metadata.create_all(engine)
     return engine
 
