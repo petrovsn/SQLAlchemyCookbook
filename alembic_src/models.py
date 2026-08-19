@@ -42,6 +42,7 @@ class User(Base):
     nickname: Mapped[str] = mapped_column(nullable=True)
     posts = relationship("Post", back_populates="user") 
     tg_link: Mapped[str] = mapped_column(nullable=False)
+    slogan: Mapped[str] = mapped_column(nullable=False, server_default="Per stradania to Sterne") 
  
 
 class Post(Base): 
