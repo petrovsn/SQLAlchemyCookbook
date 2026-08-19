@@ -40,37 +40,17 @@ class User(Base):
     __tablename__ = "users"
     name: Mapped[str] = mapped_column()
     nickname: Mapped[str] = mapped_column(nullable=True) 
-    addresses = relationship("Address", back_populates="user") 
-    posts = relationship("Post", back_populates="user") 
+    posts = relationship("Post", back_populates="user", cascade="all, delete") 
  
- 
-class Address(Base): 
-    __tablename__ = "addresses"
-    email_address = Column(String, nullable=False) 
-    user_id = Column(Integer, ForeignKey("users.id")) 
-    user = relationship("User", back_populates="addresses") 
-
-
 
 class Post(Base): 
     __tablename__ = "posts"
     text = Column(String) 
-    user_id = Column(Integer, ForeignKey("users.id")) 
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"),nullable=True)
     user = relationship("User", back_populates="posts") 
-
-
-for model in [User,Address, Post]:
-    print(model.__table__)
 
 
 def redeclare_db(filename = ":memory:", echo = True):
     engine = create_engine(f"sqlite+pysqlite:///{filename}", echo=echo, future=True)
     Base.metadata.create_all(engine)
-    return engine
-
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-async def redeclare_db_async(filename = ":memory:", echo = True):
-    engine = create_async_engine(f"sqlite+aiosqlite:///{filename}", echo=echo, future=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     return engine
