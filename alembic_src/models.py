@@ -38,20 +38,11 @@ class Base(AsyncAttrs):
 
 class User(Base): 
     __tablename__ = "users"
-    name: Mapped[str] = mapped_column(String(100),nullable=False)
-    nickname: Mapped[str] = mapped_column(nullable=False, default="No nickname")
-    addresses = relationship("Address", back_populates="user") 
+    name: Mapped[str] = mapped_column(nullable=False)
+    nickname: Mapped[str] = mapped_column(nullable=True)
     posts = relationship("Post", back_populates="user") 
-    tg_link: Mapped[str | None] = mapped_column(nullable=True)
+    tg_link: Mapped[str] = mapped_column(nullable=False)
  
- 
-class Address(Base): 
-    __tablename__ = "addresses"
-    email_address = Column(String, nullable=False) 
-    user_id = Column(Integer, ForeignKey("users.id")) 
-    user = relationship("User", back_populates="addresses") 
-
-
 
 class Post(Base): 
     __tablename__ = "posts"
