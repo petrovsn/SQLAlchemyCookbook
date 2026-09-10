@@ -9,6 +9,8 @@ from sqlite3 import Connection as SQLite3Connection
 
 from sqlalchemy.orm import Mapped, mapped_column
 
+
+
 # Твой код с моделями и engine = create_engine(...) должен быть выше
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):

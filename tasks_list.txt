@@ -294,6 +294,10 @@ Alice ─── UserGroup ─── Developers
 Почему нельзя использовать lazy='select' в асинхронном режиме?
 Потому что смешиваются async/sync методы. 
 
+Нужно или load или posts = await user.awaitable_attrs.posts после 
+class Base(AsyncAttrs, DeclarativeBase):
+
+
 ✅ Успех: Работающий асинхронный эндпоинт без блокировок event loop.
 
 Задача 5.2. Асинхронная сессия на всю жизнь запроса
